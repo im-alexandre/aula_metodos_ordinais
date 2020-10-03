@@ -1,5 +1,7 @@
 from itertools import combinations, product
 
+import matplotlib.pyplot as plt
+import networkx as nx
 import numpy as np
 import pandas as pd
 
@@ -11,7 +13,7 @@ alternativas = list(df.index)
 criterios = list(df.columns)
 # print(alternativas)
 
-alternativas_combinadas = combinations(alternativas, 2)
+alternativas_combinadas = list(combinations(alternativas, 2))
 # print(list(alternativas_combinadas))
 
 dataframes = {
@@ -47,3 +49,22 @@ def transformacao(valor):
 print('\n\n *** MATRIZ DE DECISÃO *** \n')
 matriz_decisao = matriz_decisao.applymap(transformacao)
 print(matriz_decisao)
+transposta = matriz_decisao.T
+transposta = transposta.values * -1
+valores_decisao = matriz_decisao.values + transposta
+
+matriz_final = pd.DataFrame(valores_decisao,
+                            index=alternativas,
+                            columns=alternativas)
+
+G = nx.DiGraph()
+G.add_nodes_from(alternativas)
+
+for i, j in list(product(alternativas, alternativas)):
+    if matriz_final.at[i, j] == 1:
+        G.add_weighted_edges_from([
+            (i, j, 1),
+        ])
+
+nx.draw(G, with_labels=True)
+plt.show()
