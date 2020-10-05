@@ -4,10 +4,12 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pandas as pd
+import pyperclip
 
 df = pd.read_csv('./condorcet_likert.csv', index_col='alternativas')
 print('*** Dados de entrada ***\n')
 print(df)
+pyperclip.copy(df.to_latex())
 
 alternativas = list(df.index)
 criterios = list(df.columns)
@@ -29,12 +31,17 @@ for criterio, (alternativaA, alternativaB) in product(criterios,
     else:
         dataframes[criterio].at[alternativaA, alternativaB] = 0
 
-# for i, j in dataframes.items():
-# print(i, '\n', j, '\n\n')
+with open('condorcet.tex', 'w') as tex:
+    for criterio, dataframe in dataframes.items():
+        tex.write(criterio)
+        tex.write(dataframe.to_latex())
+
+print('')
 
 matriz_decisao = pd.DataFrame(sum([i.values for i in dataframes.values()]),
                               index=alternativas,
                               columns=alternativas)
+pyperclip.copy(matriz_decisao.to_latex())
 
 
 def transformacao(valor):
@@ -56,7 +63,6 @@ valores_decisao = matriz_decisao.values + transposta
 matriz_final = pd.DataFrame(valores_decisao,
                             index=alternativas,
                             columns=alternativas)
-
 G = nx.DiGraph()
 G.add_nodes_from(alternativas)
 
@@ -66,5 +72,5 @@ for i, j in list(product(alternativas, alternativas)):
             (i, j, 1),
         ])
 
-nx.draw(G, with_labels=True)
+nx.draw(G, node_size=6000, with_labels=True, node_shape='s')
 plt.show()

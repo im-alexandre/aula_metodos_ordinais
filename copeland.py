@@ -2,6 +2,7 @@ from itertools import combinations, product
 
 import numpy as np
 import pandas as pd
+import pyperclip
 
 df = pd.read_csv('./condorcet_likert.csv', index_col='alternativas')
 print('*** Dados de entrada ***\n')
@@ -46,14 +47,19 @@ def transformacao(valor):
 
 print('\n\n *** MATRIZ DE DECISÃO *** \n')
 matriz_decisao = matriz_decisao.applymap(transformacao)
-transposta = matriz_decisao.T
-transposta = transposta.values * -1
+transposta = matriz_decisao.T.applymap(lambda x: x * -1)
+pyperclip.copy(transposta.to_latex())
+transposta = transposta.values
+
 valores_decisao = matriz_decisao.values + transposta
 
 matriz_final = pd.DataFrame(valores_decisao,
                             index=alternativas,
                             columns=alternativas)
+pyperclip.copy(matriz_final.to_latex())
 
 matriz_final['soma'] = matriz_final.apply(np.sum, axis=1)
+matriz_final.sort_values(by='soma', inplace=True, ascending=False)
+pyperclip.copy(matriz_final.to_latex())
 
 print(matriz_final)
