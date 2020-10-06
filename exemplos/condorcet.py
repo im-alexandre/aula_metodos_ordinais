@@ -1,3 +1,4 @@
+import os
 from itertools import combinations, product
 
 import matplotlib.pyplot as plt
@@ -6,16 +7,22 @@ import numpy as np
 import pandas as pd
 import pyperclip
 
+print('')
+
 df = pd.read_csv('./condorcet_likert.csv', index_col='alternativas')
+# pyperclip.copy(df.to_latex())
+print('')
 print('*** Dados de entrada ***\n')
 print(df)
-pyperclip.copy(df.to_latex())
+print('\n', 50 * '*', 'Tabela no formato LaTeX\n')
+print(df.to_latex())
 
 alternativas = list(df.index)
 criterios = list(df.columns)
 # print(alternativas)
 
 alternativas_combinadas = list(combinations(alternativas, 2))
+print('')
 print(list(alternativas_combinadas))
 
 dataframes = {
@@ -32,19 +39,19 @@ for criterio, (alternativaA, alternativaB) in product(criterios,
 
     else:
         dataframes[criterio].at[alternativaA, alternativaB] = 0
+    os.system('clear')
+    print(criterio, dataframes[criterio], sep='\n')
 
-# with open('condorcet.tex', 'w') as tex:
-# for criterio, dataframe in dataframes.items():
-# tex.write(criterio)
-# tex.write(dataframe.to_latex())
-
-# print('')
+print('')
 
 matriz_somatorio = pd.DataFrame(sum([i.values for i in dataframes.values()]),
                                 index=alternativas,
                                 columns=alternativas)
+os.system('clear')
 print(matriz_somatorio)
 pyperclip.copy(matriz_somatorio.to_latex())
+print('\n\n')
+print(matriz_somatorio.to_latex())
 
 
 def transformacao(valor):
@@ -56,18 +63,18 @@ def transformacao(valor):
         return 0
 
 
-print('\n\n *** MATRIZ DE DECISÃO *** \n')
-matriz_somatorio = matriz_somatorio.applymap(transformacao)
+matriz_decisao = matriz_somatorio.applymap(transformacao)
 
-print(matriz_somatorio)
-transposta = matriz_somatorio.T
+transposta = matriz_decisao.T
 transposta = transposta.values * -1
-valores_decisao = matriz_somatorio.values + transposta
+valores_decisao = matriz_decisao.values + transposta
 
 matriz_final = pd.DataFrame(valores_decisao,
                             index=alternativas,
                             columns=alternativas)
-print(matriz_final)
+os.system('clear')
+print('\n\n *** MATRIZ DE DECISÃO *** \n')
+print(matriz_decisao)
 
 G = nx.DiGraph()
 G.add_nodes_from(alternativas)
@@ -80,3 +87,5 @@ for i, j in list(product(alternativas, alternativas)):
 
 nx.draw(G, node_size=6000, with_labels=True, node_shape='s')
 plt.show()
+os.system('clear')
+print(matriz_decisao)
