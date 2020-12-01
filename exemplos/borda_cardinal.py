@@ -1,36 +1,33 @@
 import os
-
 import numpy as np
 import pandas as pd
-import pyperclip
 
-print('')
+os.system('clear')
 
 df = pd.read_csv('borda_cardinal.csv', index_col='alternativas')
-pyperclip.copy(df.to_latex())
-print('\n***Dados de entrada***\n', df, '\n')
 
-colunas = list()
-for criterio in df.columns:
-    ordenado = df[criterio].sort_values(ascending=False)
-    ordenado = ordenado.reset_index()
-    ordenado[criterio + '_ordem'] = ordenado.index
-    ordenado.set_index('alternativas', inplace=True)
-    os.system('clear')
-    print(ordenado)
-    colunas.append(ordenado[criterio + '_ordem'])
+print('\n***Dados de entrada***\n', df, '\n')
+
+df['criterio1'].rank()
+# df['criterio1'].rank(ascending=False)
+
+def ranking(coluna):
+    return coluna.rank(ascending=False)
 
 print('')
 
-matriz_decisao = pd.concat(colunas, axis=1).applymap(lambda x: x + 1)
-matriz_decisao.columns = df.columns
+os.system('clear')
+df.apply(ranking, axis='index')
 
-pyperclip.copy(matriz_decisao.to_latex())
-matriz_decisao['soma'] = matriz_decisao.apply(np.sum, axis=1)
-matriz_decisao = matriz_decisao.sort_values(by='soma')
-pyperclip.copy(matriz_decisao.to_latex())
+matriz_decisao = df.apply(ranking, axis='index')
 
-print('', 50 * '*', '\n')
-print(df)
-print('\n')
-print('\n*** Matriz de decisão *** \n', matriz_decisao)
+# https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.apply.html
+
+os.system('clear')
+matriz_decisao.apply(np.sum, axis='columns')
+
+matriz_decisao['soma'] = matriz_decisao.apply(np.sum, axis='columns')
+matriz_decisao.sort_values(by='soma', inplace=True)
+
+os.system('clear')
+matriz_decisao
